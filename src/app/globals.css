@@ -1,0 +1,204 @@
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------------
+   Design tokens
+   Editorial direction: warm paper ground, near-black ink, a single clay accent.
+   Every colour in the product UI comes from here so the palette stays coherent.
+--------------------------------------------------------------------------- */
+@theme {
+  --color-paper: #f7f4ef;
+  --color-paper-raised: #fffdfa;
+  --color-ink: #1a1917;
+  --color-ink-muted: #5c574f;
+  --color-ink-faint: #8c857a;
+  --color-rule: #e2dcd1;
+  --color-rule-strong: #cfc7b8;
+  --color-clay: #a8443a;
+  --color-clay-soft: #f3e3e0;
+  --color-clay-deep: #7e3029;
+  --color-moss: #4a6146;
+  --color-amber: #b4813a;
+
+  --font-display: var(--font-fraunces), ui-serif, Georgia, 'Times New Roman', serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --radius-card: 0.875rem;
+
+  --shadow-raised: 0 1px 2px rgb(26 25 23 / 0.04), 0 8px 24px -12px rgb(26 25 23 / 0.14);
+  --shadow-float: 0 2px 4px rgb(26 25 23 / 0.05), 0 18px 40px -16px rgb(26 25 23 / 0.22);
+
+  --animate-rise: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+--------------------------------------------------------------------------- */
+@layer base {
+  * {
+    border-color: var(--color-rule);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: var(--color-clay-soft);
+    color: var(--color-clay-deep);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-clay);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* A calm, narrow scrollbar keeps the editor panes from feeling like chrome. */
+  .scroll-slim {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-rule-strong) transparent;
+  }
+
+  .scroll-slim::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  .scroll-slim::-webkit-scrollbar-thumb {
+    background-color: var(--color-rule-strong);
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 999px;
+  }
+}
+
+@layer components {
+  /* Column containers whose first section should sit flush with the column top. */
+  .sections-flush > section:first-of-type {
+    margin-top: 0 !important;
+  }
+
+  .paper-grain {
+    background-image:
+      radial-gradient(circle at 15% 12%, rgb(168 68 58 / 0.05), transparent 45%),
+      radial-gradient(circle at 85% 8%, rgb(74 97 70 / 0.05), transparent 40%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Print pipeline
+   The on-screen preview and the printed page are the same DOM. Printing only
+   removes the application chrome and releases the page from its screen-scaled
+   wrapper, which is what makes the export pixel-faithful by construction.
+--------------------------------------------------------------------------- */
+@page {
+  size: var(--print-page-size, A4);
+  margin: 0;
+}
+
+@media print {
+  html,
+  body {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  [data-print='hide'] {
+    display: none !important;
+  }
+
+  /*
+    Three roles, applied to the editor's own layout:
+      hide        — application chrome that must not print
+      surface     — the flex shell holding the panes
+      pane        — the one pane whose contents *are* the document
+      passthrough — sizing wrappers that must collapse around the sheet
+    Anything unmarked inside a hidden pane simply never reaches the page.
+  */
+  [data-print='surface'],
+  [data-print='pane'] {
+    position: static !important;
+    display: block !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    border: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+    height: auto !important;
+    max-height: none !important;
+    flex: none !important;
+  }
+
+  /* The screen-fit scale is dropped outright; the sheet prints at true size. */
+  [data-print='scaler'] {
+    transform: none !important;
+    width: auto !important;
+  }
+
+  /* The fit-to-width wrapper collapses so the sheet prints at its true size. */
+  [data-print='passthrough'] {
+    width: auto !important;
+    max-width: none !important;
+    height: auto !important;
+    margin: 0 !important;
+  }
+
+  [data-print='page'] {
+    box-shadow: none !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    transform: none !important;
+    min-height: auto !important;
+  }
+
+  /* Backgrounds inside templates are content, not decoration. */
+  [data-resume-root] {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Never break a single entry across a page boundary. */
+  [data-block] {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  [data-block-heading] {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+}
