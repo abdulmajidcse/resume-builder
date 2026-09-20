@@ -24,7 +24,7 @@ const description =
   'Build a resume or CV from ten print-ready templates, edit it live, and download a clean PDF. Everything stays in your browser — no account, no upload.';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   title: {
     default: 'Inkwell — Resume & CV Builder',
     template: '%s · Inkwell',

@@ -24,15 +24,24 @@ services:
         # assign to this service. Override by setting NEXT_PUBLIC_SITE_URL
         # explicitly in Coolify > Environment Variables.
         NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-${SERVICE_FQDN_WEB_3000:-http://localhost:3000}}
+        # Note: Coolify also passes --build-arg NEXT_PUBLIC_SITE_URL from its
+        # own env file, and a CLI build arg wins over this default. Set the
+        # value under Environment Variables (Build Variable enabled) so it is
+        # never handed over empty.
 
     restart: unless-stopped
 
+    # Mapping syntax, not a list. Coolify merges its own variables into this
+    # block and re-serialises it; a YAML sequence comes back out as a map keyed
+    # by list index, which docker compose rejects with
+    # "non-string key in services.web.environment: 0".
     environment:
       # Declaring this magic variable tells Coolify to allocate a domain for
       # service `web` on port 3000 and wire up the proxy + TLS certificate.
-      - SERVICE_FQDN_WEB_3000
-      - NODE_ENV=production
-      - NEXT_TELEMETRY_DISABLED=1
+      # Empty value means "inherit whatever Coolify generates".
+      SERVICE_FQDN_WEB_3000: ''
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: '1'
 
     expose:
       - '3000'
